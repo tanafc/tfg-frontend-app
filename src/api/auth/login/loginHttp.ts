@@ -6,8 +6,10 @@ interface authLogin {
 }
 
 export const loginHttp = async ({ username, password }: authLogin) => {
-  return httpClient().post("/login", {
+  const response = await httpClient().post("/login", {
     username,
     password,
   });
+
+  return response;
 };

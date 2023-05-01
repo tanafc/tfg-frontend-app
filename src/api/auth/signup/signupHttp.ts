@@ -7,9 +7,11 @@ interface authSignup {
 }
 
 export const signupHttp = async ({ username, email, password }: authSignup) => {
-  return httpClient().post("/signup", {
+  const response = httpClient().post("/signup", {
     username,
     email,
     password,
   });
+
+  return response;
 };

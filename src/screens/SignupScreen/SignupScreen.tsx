@@ -13,15 +13,15 @@ const SignupScreen = ({ navigation }: SignupScreenRouteProps) => {
   const [password, setPassword] = React.useState<string>("");
   const [passwordRepeat, setPasswordRepeat] = React.useState<string>("");
 
-  const singup = useSignup();
+  const signup = useSignup();
 
   const handleSignup = () => {
-    singup({ username, email, password })
+    signup({ username, email, password })
       .then(() => {
         navigation.navigate("LoginScreen");
       })
-      .catch((err) => {
-        Alert.alert(err);
+      .catch(() => {
+        Alert.alert("Input not valid")
       });
   };
 

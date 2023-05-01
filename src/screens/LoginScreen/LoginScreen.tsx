@@ -32,8 +32,8 @@ const LoginScreen = ({ navigation }: LoginScreenRouteProps) => {
         });
         navigation.navigate("HomeScreen");
       })
-      .catch((err) => {
-        Alert.alert(err);
+      .catch(() => {
+        Alert.alert("User not found")
       });
   };
 
