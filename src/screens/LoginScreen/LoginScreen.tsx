@@ -1,17 +1,40 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomButton, {
   CustomButtonTypes,
 } from "../../components/CustomButton/CustomButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
+import { useAuth } from "../../context/AuthContext";
+import { useLogin } from "../../hooks/useLogin";
 import { LoginScreenRouteProps } from "../../models/Navigation";
 
 const LoginScreen = ({ navigation }: LoginScreenRouteProps) => {
   const [username, setUsername] = React.useState<string>("");
   const [password, setPassword] = React.useState<string>("");
 
+  const { account, saveAccount } = useAuth();
+  const login = useLogin();
+
+  useEffect(() => {
+    if (account.accessToken) {
+      navigation.navigate("HomeScreen");
+    }
+  }, []);
+
   const handleLogin = () => {
-    Alert.alert("Username: " + username + " Password: " + password);
+    login({ username, password })
+      .then(async (res) => {
+        await saveAccount({
+          username: res.data.username,
+          email: res.data.email,
+          role: res.data.role,
+          accessToken: res.data.accessToken,
+        });
+        navigation.navigate("HomeScreen");
+      })
+      .catch((err) => {
+        Alert.alert(err);
+      });
   };
 
   return (

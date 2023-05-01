@@ -11,11 +11,6 @@ export const RootNavigator = () => {
   return (
       <RootStack.Navigator>
         <RootStack.Screen
-          name="HomeScreen"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
-        <RootStack.Screen
           name="LoginScreen"
           component={LoginScreen}
           options={{ headerShown: false }}
@@ -23,6 +18,11 @@ export const RootNavigator = () => {
         <RootStack.Screen
           name="SignupScreen"
           component={SignupScreen}
+          options={{ headerShown: false }}
+        />
+        <RootStack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
           options={{ headerShown: false }}
         />
       </RootStack.Navigator>

@@ -4,6 +4,7 @@ import CustomButton, {
   CustomButtonTypes,
 } from "../../components/CustomButton/CustomButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
+import { useSignup } from "../../hooks/useSignup";
 import { SignupScreenRouteProps } from "../../models/Navigation";
 
 const SignupScreen = ({ navigation }: SignupScreenRouteProps) => {
@@ -12,8 +13,16 @@ const SignupScreen = ({ navigation }: SignupScreenRouteProps) => {
   const [password, setPassword] = React.useState<string>("");
   const [passwordRepeat, setPasswordRepeat] = React.useState<string>("");
 
+  const singup = useSignup();
+
   const handleSignup = () => {
-    Alert.alert("Username: " + username + " Password: " + password);
+    singup({ username, email, password })
+      .then(() => {
+        navigation.navigate("LoginScreen");
+      })
+      .catch((err) => {
+        Alert.alert(err);
+      });
   };
 
   return (

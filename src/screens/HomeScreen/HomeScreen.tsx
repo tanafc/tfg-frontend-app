@@ -1,9 +1,20 @@
+import { StackActions } from "@react-navigation/native";
 import React from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomButton from "../../components/CustomButton";
+import { useAuth } from "../../context/AuthContext";
+import { useLogout } from "../../hooks/useLogout";
 import { HomeScreenRouteProps } from "../../models/Navigation";
 
 const HomeScreen = ({ navigation }: HomeScreenRouteProps) => {
+  const { account } = useAuth();
+  const logout = useLogout();
+
+  const handleLogout = async () => {
+    await logout();
+    navigation.dispatch(StackActions.popToTop());
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -11,19 +22,18 @@ const HomeScreen = ({ navigation }: HomeScreenRouteProps) => {
     >
       <View style={styles.container}>
         <View style={styles.titleView}>
-          <Text style={styles.titleText}>Hello</Text>
+          <Text style={styles.titleText}>Welcome back, {account.username}</Text>
         </View>
 
         <View style={styles.buttonView}>
           <CustomButton
-            text="Login"
-            onPress={() => navigation.navigate("LoginScreen")}
+            text="Have a nice day"
+            onPress={() => Alert.alert("I love you <3")}
           />
+        </View>
 
-          <CustomButton
-            text="Signup"
-            onPress={() => navigation.navigate("SignupScreen")}
-          />
+        <View style={styles.buttonView}>
+          <CustomButton text="Logout" onPress={handleLogout} />
         </View>
       </View>
     </ScrollView>
