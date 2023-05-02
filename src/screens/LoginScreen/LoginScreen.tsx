@@ -6,9 +6,9 @@ import CustomButton, {
 import CustomInput from "../../components/CustomInput/CustomInput";
 import { useAuth } from "../../context/AuthContext";
 import { useLogin } from "../../hooks/useLogin";
-import { LoginScreenRouteProps } from "../../models/Navigation";
+import { LoginScreenNavigationProps } from "../../models/Navigation";
 
-const LoginScreen = ({ navigation }: LoginScreenRouteProps) => {
+const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
   const [username, setUsername] = React.useState<string>("");
   const [password, setPassword] = React.useState<string>("");
 
@@ -17,7 +17,7 @@ const LoginScreen = ({ navigation }: LoginScreenRouteProps) => {
 
   useEffect(() => {
     if (account.accessToken) {
-      navigation.navigate("HomeScreen");
+      navigation.navigate("Home", { screen: "HomeScreen" });
     }
   }, []);
 
@@ -30,10 +30,10 @@ const LoginScreen = ({ navigation }: LoginScreenRouteProps) => {
           role: res.data.role,
           accessToken: res.data.accessToken,
         });
-        navigation.navigate("HomeScreen");
+        navigation.navigate("Home", { screen: "HomeScreen" });
       })
       .catch(() => {
-        Alert.alert("User not found")
+        Alert.alert("User not found");
       });
   };
 
