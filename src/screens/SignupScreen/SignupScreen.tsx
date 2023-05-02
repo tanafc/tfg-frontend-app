@@ -5,9 +5,9 @@ import CustomButton, {
 } from "../../components/CustomButton/CustomButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import { useSignup } from "../../hooks/useSignup";
-import { SignupScreenRouteProps } from "../../models/Navigation";
+import { SignupScreenNavigationProps } from "../../models/Navigation";
 
-const SignupScreen = ({ navigation }: SignupScreenRouteProps) => {
+const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
   const [username, setUsername] = React.useState<string>("");
   const [email, setEmail] = React.useState<string>("");
   const [password, setPassword] = React.useState<string>("");
