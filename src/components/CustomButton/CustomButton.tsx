@@ -24,12 +24,14 @@ const CustomButton: FC<CustomButtonProps> = ({
   text,
   type = CustomButtonTypes.PRIMARY,
   onPress,
+  disabled = false
 }) => {
   if (type === CustomButtonTypes.TERTIARY) {
     return (
       <Pressable
         onPress={onPress}
         style={[styles.container, styles.container_tertiary]}
+        disabled={disabled}
       >
         <Text style={[styles.text, styles.text_tertiary]}>{text}</Text>
       </Pressable>
@@ -40,6 +42,7 @@ const CustomButton: FC<CustomButtonProps> = ({
     <Pressable
       onPress={onPress}
       style={[styles.container, styles.container_primary]}
+      disabled={disabled}
     >
       <Text style={styles.text}>{text}</Text>
     </Pressable>
