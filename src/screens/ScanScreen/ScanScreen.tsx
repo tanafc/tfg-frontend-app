@@ -1,20 +1,179 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { BarCodeScanner, BarCodeScannerResult } from "expo-barcode-scanner";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+  Modal,
+} from "react-native";
+import { Product } from "../../models/Product";
+import CustomButton, {
+  CustomButtonTypes,
+} from "../../components/CustomButton/CustomButton";
+import { ScanScreenNavigationProps } from "../../models/Navigation";
+import { useProduct } from "../../hooks/useProducts";
 
-const ScanScreen = () => {
-  return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ flexGrow: 1 }}
-    >
+const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
+  const [product, setProduct] = useState<Product | undefined>(undefined);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState(false);
+  const [barcode, setBarcode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const { getProduct } = useProduct();
+
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () =>
+      setIsFocused(true)
+    );
+
+    const unsubscribeBlur = navigation.addListener("blur", () => {
+      setIsFocused(false);
+      setScanned(false);
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigation]);
+
+  useEffect(() => {
+    const getBarCodeScannerPermissions = async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+    };
+
+    getBarCodeScannerPermissions();
+  }, []);
+
+  const handleBarCodeScanned = async ({ type, data }: BarCodeScannerResult) => {
+    setScanned(true);
+    setLoading(true);
+
+    await getProduct(data)
+      .then((response) => {
+        setProduct(response.data);
+        setBarcode(data);
+      })
+      .catch((reason) => {
+        setBarcode(data);
+      });
+
+    setLoading(false);
+    setModalVisible(true);
+  };
+
+  if (hasPermission === null) {
+    return (
       <View style={styles.container}>
-        <View style={styles.titleView}>
-          <Text style={styles.titleText}>Scan Page</Text>
-        </View>
+        <Text style={styles.text}>Requesting for camera permission</Text>
       </View>
-    </ScrollView>
+    );
+  }
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>No access to camera</Text>
+      </View>
+    );
+  }
+
+  if (isFocused) {
+    return (
+      <View style={styles.container}>
+        <BarCodeScanner
+          barCodeTypes={[BarCodeScanner.Constants.BarCodeType.upc_a]}
+          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          style={[StyleSheet.absoluteFillObject, styles.container]}
+        >
+          {/** Adds opaque edges */}
+          <View style={styles.layerTop} />
+          <View style={styles.layerCenter}>
+            <View style={styles.layerLeft} />
+            <View style={styles.focused} />
+            <View style={styles.layerRight} />
+          </View>
+          <View style={styles.layerBottom} />
+        </BarCodeScanner>
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            {product !== undefined ? (
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                  Yay! We have this product 🥳
+                </Text>
+                <CustomButton
+                  text={"Thats great!"}
+                  onPress={() => setModalVisible(false)}
+                />
+              </View>
+            ) : (
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                  It seems you found a product we dont have! 😱 Would you mind
+                  sharing information about it? 🧐
+                </Text>
+                <View style={styles.modalButtons}>
+                  <CustomButton
+                    text={"That would be awesome! 🥳"}
+                    onPress={() =>
+                      navigation.navigate("Product", {
+                        screen: "NewProductScreen",
+                        params: { barcode: barcode },
+                      })
+                    }
+                  />
+                  <CustomButton
+                    text={"Nah, im good 💀"}
+                    type={CustomButtonTypes.TERTIARY}
+                    onPress={() => setModalVisible(false)}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+        </Modal>
+
+        {loading && (
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <ActivityIndicator size="large" color="#f58b54" />
+            </View>
+          </View>
+        )}
+
+        {scanned && !loading && (
+          <View style={styles.buttonView}>
+            <CustomButton
+              text={"Scan another product"}
+              onPress={() => setScanned(false)}
+            />
+          </View>
+        )}
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#f58b54" />
+    </View>
   );
 };
 
+const opacity = "rgba(0,0,0,.6)";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -23,14 +182,78 @@ const styles = StyleSheet.create({
     backgroundColor: "#DFDDC7",
   },
 
-  titleView: {
-    marginBottom: 15,
+  scanArea: {
+    flex: 1,
+    flexDirection: "column",
   },
 
-  titleText: {
-    fontWeight: "bold",
-    fontStyle: "italic",
-    fontSize: 30,
+  layerTop: {
+    flex: 2,
+    backgroundColor: opacity,
+  },
+
+  layerCenter: {
+    flex: 1,
+    flexDirection: "row",
+  },
+
+  layerLeft: {
+    flex: 1,
+    backgroundColor: opacity,
+  },
+
+  focused: {
+    flex: 10,
+  },
+
+  layerRight: {
+    flex: 1,
+    backgroundColor: opacity,
+  },
+
+  layerBottom: {
+    flex: 2,
+    backgroundColor: opacity,
+  },
+
+  buttonView: {
+    width: "60%",
+  },
+
+  text: {
+    fontSize: 20,
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 10,
+  },
+
+  modalView: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalText: {
+    fontSize: 18,
+  },
+
+  modalButtons: {
+    marginTop: 20,
+    width: "80%",
   },
 });
 
