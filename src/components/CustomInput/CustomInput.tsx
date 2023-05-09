@@ -3,14 +3,14 @@ import { StyleSheet, Text, TextInput, View } from "react-native";
 
 type CustomInputProps = {
   value: string;
-  setValue: React.Dispatch<SetStateAction<string>>;
+  onChangeText: ((text: string) => void) | undefined;
   placeholder?: string;
   secureTextEntry?: boolean;
 };
 
 const CustomInput: FC<CustomInputProps> = ({
   value,
-  setValue,
+  onChangeText,
   placeholder = "",
   secureTextEntry = false,
 }) => {
@@ -21,7 +21,7 @@ const CustomInput: FC<CustomInputProps> = ({
         placeholder={placeholder}
         value={value}
         secureTextEntry={secureTextEntry}
-        onChangeText={setValue}
+        onChangeText={onChangeText}
       />
     </View>
   );
