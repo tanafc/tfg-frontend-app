@@ -7,6 +7,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type RootStackParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;
+  Product: NavigatorScreenParams<ProductStackParamList>;
   Auth: NavigatorScreenParams<AuthStackParamList>;
 };
 
@@ -15,6 +16,10 @@ export type HomeStackParamList = {
   SearchScreen: undefined;
   ScanScreen: undefined;
   ProfileScreen: undefined;
+};
+
+export type ProductStackParamList = {
+  NewProductScreen: { barcode: string };
 };
 
 export type AuthStackParamList = {
@@ -27,8 +32,18 @@ export type HomeScreenNavigationProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
+export type ScanScreenNavigationProps = CompositeScreenProps<
+  BottomTabScreenProps<HomeStackParamList, "ScanScreen">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
 export type ProfileScreenNavigationProps = CompositeScreenProps<
   BottomTabScreenProps<HomeStackParamList, "ProfileScreen">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type NewProductScreenNavigationProps = CompositeScreenProps<
+  NativeStackScreenProps<ProductStackParamList, "NewProductScreen">,
   NativeStackScreenProps<RootStackParamList>
 >;
 
