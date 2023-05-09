@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomButton, {
   CustomButtonTypes,
@@ -8,10 +8,10 @@ import { useSignup } from "../../hooks/useSignup";
 import { SignupScreenNavigationProps } from "../../models/Navigation";
 
 const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
-  const [username, setUsername] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
-  const [passwordRepeat, setPasswordRepeat] = React.useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [passwordRepeat, setPasswordRepeat] = useState<string>("");
 
   const signup = useSignup();
 
@@ -40,21 +40,21 @@ const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
           <CustomInput
             placeholder="John Doe"
             value={username}
-            setValue={setUsername}
+            onChangeText={setUsername}
           />
 
           <Text style={styles.labelInput}>Email</Text>
           <CustomInput
             placeholder="example@email.com"
             value={email}
-            setValue={setEmail}
+            onChangeText={setEmail}
           />
 
           <Text style={styles.labelInput}>Password</Text>
           <CustomInput
             placeholder="*********"
             value={password}
-            setValue={setPassword}
+            onChangeText={setPassword}
             secureTextEntry
           />
 
@@ -62,7 +62,7 @@ const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
           <CustomInput
             placeholder="*********"
             value={passwordRepeat}
-            setValue={setPasswordRepeat}
+            onChangeText={setPasswordRepeat}
             secureTextEntry
           />
 

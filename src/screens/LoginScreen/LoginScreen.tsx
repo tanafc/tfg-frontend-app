@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import CustomButton, {
   CustomButtonTypes,
@@ -9,8 +9,8 @@ import { useLogin } from "../../hooks/useLogin";
 import { LoginScreenNavigationProps } from "../../models/Navigation";
 
 const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
-  const [username, setUsername] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
 
   const { account, saveAccount } = useAuth();
   const login = useLogin();
@@ -51,13 +51,13 @@ const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
           <CustomInput
             placeholder="Username"
             value={username}
-            setValue={setUsername}
+            onChangeText={setUsername}
           />
 
           <CustomInput
             placeholder="Password"
             value={password}
-            setValue={setPassword}
+            onChangeText={setPassword}
             secureTextEntry={true}
           />
 
