@@ -8,15 +8,18 @@ import {
   View,
   Modal,
 } from "react-native";
-import { Product } from "../../models/Product";
+import { ProductData } from "../../models/Product";
 import CustomButton, {
   CustomButtonTypes,
 } from "../../components/CustomButton/CustomButton";
 import { ScanScreenNavigationProps } from "../../models/Navigation";
-import { useProduct } from "../../hooks/useProducts";
+import { useProduct } from "../../hooks/useProduct";
+import { useProductContext } from "../../context/ProductContext";
 
 const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
-  const [product, setProduct] = useState<Product | undefined>(undefined);
+  const [scannedProduct, setScannedProduct] = useState<ProductData | undefined>(
+    undefined
+  );
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [barcode, setBarcode] = useState("");
@@ -24,6 +27,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const { products, setProducts } = useProductContext();
   const { getProduct } = useProduct();
 
   useEffect(() => {
@@ -57,13 +61,17 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
 
     await getProduct(data)
       .then((response) => {
-        setProduct(response.data);
+        setScannedProduct(response.data);
+
+        if (!products.some(el => el.barcode === data)) {
+          setProducts([...products, response.data]);
+        }
         setBarcode(data);
       })
       .catch((reason) => {
         setBarcode(data);
       });
-
+      
     setLoading(false);
     setModalVisible(true);
   };
@@ -109,25 +117,43 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
           }}
         >
           <View style={styles.modalContainer}>
-            {product !== undefined ? (
+            {scannedProduct !== undefined ? (
               <View style={styles.modalView}>
                 <Text style={styles.modalText}>
                   Yay! We have this product 🥳
                 </Text>
+                <Text>
+                  {scannedProduct.name}, {scannedProduct.brand}
+                </Text>
+                <View style={styles.modalButtons}>
                 <CustomButton
-                  text={"Thats great!"}
+                  text={"Look product info 👀"}
+                  onPress={() => {
+                    
+                    setModalVisible(false);
+
+                    navigation.navigate("Product", {
+                      screen: "ProductScreen",
+                      params: { barcode: barcode },
+                    });
+                  }}
+                />
+                <CustomButton
+                  text={"Nah, im good"}
+                  type={CustomButtonTypes.TERTIARY}
                   onPress={() => setModalVisible(false)}
                 />
+                </View>
               </View>
             ) : (
               <View style={styles.modalView}>
                 <Text style={styles.modalText}>
-                  It seems you found a product we dont have! 😱 Would you mind
-                  sharing information about it? 🧐
+                  😱 It seems you found a product we dont have! Would you mind
+                  sharing information about it?
                 </Text>
                 <View style={styles.modalButtons}>
                   <CustomButton
-                    text={"That would be awesome! 🥳"}
+                    text={"That would be awesome!"}
                     onPress={() =>
                       navigation.navigate("Product", {
                         screen: "NewProductScreen",
@@ -136,7 +162,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                     }
                   />
                   <CustomButton
-                    text={"Nah, im good 💀"}
+                    text={"Nah, im good"}
                     type={CustomButtonTypes.TERTIARY}
                     onPress={() => setModalVisible(false)}
                   />
@@ -252,7 +278,7 @@ const styles = StyleSheet.create({
   },
 
   modalButtons: {
-    marginTop: 20,
+    marginTop: 15,
     width: "80%",
   },
 });
