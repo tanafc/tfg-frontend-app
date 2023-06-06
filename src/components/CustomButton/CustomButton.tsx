@@ -24,13 +24,17 @@ const CustomButton: FC<CustomButtonProps> = ({
   text,
   type = CustomButtonTypes.PRIMARY,
   onPress,
-  disabled = false
+  disabled = false,
 }) => {
   if (type === CustomButtonTypes.TERTIARY) {
     return (
       <Pressable
         onPress={onPress}
-        style={[styles.container, styles.container_tertiary]}
+        style={[
+          styles.container,
+          styles.container_tertiary,
+          disabled ? styles.container_disabled : {},
+        ]}
         disabled={disabled}
       >
         <Text style={[styles.text, styles.text_tertiary]}>{text}</Text>
@@ -41,7 +45,11 @@ const CustomButton: FC<CustomButtonProps> = ({
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.container, styles.container_primary]}
+      style={[
+        styles.container,
+        styles.container_primary,
+        disabled ? styles.container_disabled : {},
+      ]}
       disabled={disabled}
     >
       <Text style={styles.text}>{text}</Text>
@@ -62,6 +70,10 @@ const styles = StyleSheet.create({
 
   container_primary: {
     backgroundColor: "#f58b54",
+  },
+
+  container_disabled: {
+    opacity: 0.5,
   },
 
   container_tertiary: {},
