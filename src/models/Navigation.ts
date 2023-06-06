@@ -20,6 +20,8 @@ export type HomeStackParamList = {
 
 export type ProductStackParamList = {
   NewProductScreen: { barcode: string };
+  NewPriceScreen: { barcode: string; name: string; brand: string };
+  ProductScreen: { barcode: string };
 };
 
 export type AuthStackParamList = {
@@ -37,6 +39,11 @@ export type ScanScreenNavigationProps = CompositeScreenProps<
   NativeStackScreenProps<RootStackParamList>
 >;
 
+export type SearchScreenNavigationProps = CompositeScreenProps<
+  BottomTabScreenProps<HomeStackParamList, "SearchScreen">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
 export type ProfileScreenNavigationProps = CompositeScreenProps<
   BottomTabScreenProps<HomeStackParamList, "ProfileScreen">,
   NativeStackScreenProps<RootStackParamList>
@@ -44,6 +51,16 @@ export type ProfileScreenNavigationProps = CompositeScreenProps<
 
 export type NewProductScreenNavigationProps = CompositeScreenProps<
   NativeStackScreenProps<ProductStackParamList, "NewProductScreen">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type NewPriceScreenNavigationProps = CompositeScreenProps<
+  NativeStackScreenProps<ProductStackParamList, "NewPriceScreen">,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export type ProductScreenNavigationProps = CompositeScreenProps<
+  NativeStackScreenProps<ProductStackParamList, "ProductScreen">,
   NativeStackScreenProps<RootStackParamList>
 >;
 

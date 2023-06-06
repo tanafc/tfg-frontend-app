@@ -1,12 +1,25 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Picker } from "@react-native-picker/picker";
 import { useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CustomButton from "../../../components/CustomButton";
+import { CustomButtonTypes } from "../../../components/CustomButton/CustomButton";
 import CustomInput from "../../../components/CustomInput";
+import { useProduct } from "../../../hooks/useProduct";
 import { NewProductScreenNavigationProps } from "../../../models/Navigation";
-import { NutriScore, Nutrients } from "../../../models/Product";
-import { useProduct } from "../../../hooks/useProducts";
+import {
+  MandatoryNutrients,
+  NutriScore,
+  NutrientsData,
+  OptionalNutrients,
+} from "../../../models/Product";
 
 const NewProductScreen = ({
   route,
@@ -16,7 +29,7 @@ const NewProductScreen = ({
   const [name, setName] = useState<string>("");
   const [brand, setBrand] = useState<string>("");
   const [ingredients, setIngredients] = useState<string[]>([""]);
-  const [nutrients, setNutrients] = useState<Nutrients>({
+  const [nutrients, setNutrients] = useState<NutrientsData>({
     energy: "",
     totalFat: "",
     saturatedFat: "",
@@ -37,6 +50,12 @@ const NewProductScreen = ({
   });
   const [isBeverage, setIsBeverage] = useState<boolean>(false);
   const [nutriScore, setNutriScore] = useState<NutriScore>("");
+  const [uploadSuccessful, setUploadSuccessful] = useState<boolean | undefined>(
+    undefined
+  );
+  const [showOptionalNutrients, setShowOptionalNutrients] =
+    useState<boolean>(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const { postProduct } = useProduct();
 
@@ -59,27 +78,34 @@ const NewProductScreen = ({
   };
 
   const handleNutrientChange = (name: string, value: string) => {
-    const nutrient = name as keyof Nutrients;
+    const nutrient = name as keyof NutrientsData;
     setNutrients({ ...nutrients, [nutrient]: value });
   };
 
   const handleUploadProduct = async () => {
+    const withoutEmptyIngredients = ingredients.filter(
+      (ingredient) => !!ingredient
+    );
+
     await postProduct({
       barcode: barcode,
       name: name,
       brand: brand,
       image: "null",
-      ingredients: ingredients,
+      ingredients: withoutEmptyIngredients,
       nutrients: nutrients,
       beverage: isBeverage,
       nutriScore: nutriScore,
     })
-      .then((response) => {
-        Alert.alert("Product uploaded yay!");
+      .then(() => {
+        setUploadSuccessful(true);
       })
       .catch((reason) => {
+        setUploadSuccessful(false);
         console.log(reason.message);
       });
+
+    setModalVisible(true);
   };
 
   return (
@@ -90,6 +116,7 @@ const NewProductScreen = ({
       <View style={styles.container}>
         <View style={styles.titleView}>
           <Text style={styles.titleText}>New Product 🌯</Text>
+          <Text>Barcode: {barcode}</Text>
         </View>
         <View style={styles.inputView}>
           <Text style={styles.labelText}>Name:</Text>
@@ -139,15 +166,22 @@ const NewProductScreen = ({
 
           <View style={styles.nutrientsContainer}>
             <Text style={styles.labelText}>Nutrients (100g) 💪:</Text>
-            {Object.keys(nutrients).map((nutrient) => (
+            {Object.keys(MandatoryNutrients).map((nutrient) => (
               <View key={nutrient} style={styles.nutrientRow}>
                 <View style={styles.nutrientText}>
-                  <Text>{nutrient}:</Text>
+                  <Text>
+                    {
+                      MandatoryNutrients[
+                        nutrient as keyof typeof MandatoryNutrients
+                      ]
+                    }
+                    :
+                  </Text>
                 </View>
                 <View style={styles.nutrientInput}>
                   <CustomInput
                     placeholder="0.00"
-                    value={nutrients[nutrient as keyof Nutrients] as string}
+                    value={nutrients[nutrient as keyof NutrientsData] as string}
                     onChangeText={(value) =>
                       handleNutrientChange(nutrient, value)
                     }
@@ -155,6 +189,40 @@ const NewProductScreen = ({
                 </View>
               </View>
             ))}
+          </View>
+          <View style={styles.nutrientsContainer}>
+            <Pressable
+              onPress={() => setShowOptionalNutrients(!showOptionalNutrients)}
+            >
+              <Text style={styles.labelText}>↓ Provide additional info</Text>
+              <Text>Only if you know 🤔</Text>
+            </Pressable>
+            {showOptionalNutrients &&
+              Object.keys(OptionalNutrients).map((nutrient) => (
+                <View key={nutrient} style={styles.nutrientRow}>
+                  <View style={styles.nutrientText}>
+                    <Text>
+                      {
+                        OptionalNutrients[
+                          nutrient as keyof typeof OptionalNutrients
+                        ]
+                      }
+                      :
+                    </Text>
+                  </View>
+                  <View style={styles.nutrientInput}>
+                    <CustomInput
+                      placeholder="0.00"
+                      value={
+                        nutrients[nutrient as keyof NutrientsData] as string
+                      }
+                      onChangeText={(value) =>
+                        handleNutrientChange(nutrient, value)
+                      }
+                    />
+                  </View>
+                </View>
+              ))}
           </View>
 
           <View style={styles.beverageContainer}>
@@ -173,12 +241,13 @@ const NewProductScreen = ({
             <Picker
               selectedValue={nutriScore}
               onValueChange={(itemValue) => setNutriScore(itemValue)}
+              mode="dropdown"
             >
-              <Picker.Item label="A: Very healthy!" value={"A"} />
-              <Picker.Item label="B: Healthy" value={"B"} />
-              <Picker.Item label="C: Not really healthy" value={"C"} />
-              <Picker.Item label="D: Not healthy" value={"D"} />
-              <Picker.Item label="E: Definetly not healthy" value={"E"} />
+              <Picker.Item label="A:   Very healthy!" value={"A"} />
+              <Picker.Item label="B:   Healthy" value={"B"} />
+              <Picker.Item label="C:   Not really healthy" value={"C"} />
+              <Picker.Item label="D:   Not healthy" value={"D"} />
+              <Picker.Item label="E:   Definetly not healthy" value={"E"} />
               <Picker.Item label="It does not say 😥" value={""} />
             </Picker>
           </View>
@@ -190,6 +259,60 @@ const NewProductScreen = ({
             />
           </View>
         </View>
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            {uploadSuccessful === true && (
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                  Yay 🥳! The product was successfully uploaded, would you mind
+                  telling us where you found the product?
+                </Text>
+                <View style={styles.modalButtons}>
+                  <CustomButton
+                    text={"With pleasure"}
+                    onPress={() =>
+                      navigation.navigate("NewPriceScreen", {
+                        barcode: barcode,
+                        name: name,
+                        brand: brand,
+                      })
+                    }
+                  />
+                  <CustomButton
+                    type={CustomButtonTypes.TERTIARY}
+                    text={"Nah im good"}
+                    onPress={() =>
+                      navigation.navigate("Home", { screen: "HomeScreen" })
+                    }
+                  />
+                </View>
+              </View>
+            )}
+            {uploadSuccessful === false && (
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>
+                  Oh no! It seems there was an error...
+                </Text>
+                <View style={styles.modalButtons}>
+                  <CustomButton
+                    text={"Let me check"}
+                    onPress={() => {
+                      setModalVisible(false);
+                      setUploadSuccessful(undefined);
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+        </Modal>
       </View>
     </ScrollView>
   );
@@ -281,6 +404,38 @@ const styles = StyleSheet.create({
   shareButton: {
     marginTop: 10,
     marginBottom: 30,
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    margin: 10,
+  },
+
+  modalView: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalText: {
+    fontSize: 18,
+  },
+
+  modalButtons: {
+    marginTop: 15,
+    width: "80%",
   },
 });
 

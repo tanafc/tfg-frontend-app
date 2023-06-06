@@ -1,7 +1,7 @@
 import httpClient from "../httpClient";
-import { Product } from "../../models/Product";
+import { ProductData } from "../../models/Product";
 
-interface ProductHttp extends Product {
+interface ProductHttp extends ProductData {
   accessToken: string;
 }
 

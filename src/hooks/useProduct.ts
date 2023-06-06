@@ -1,7 +1,8 @@
+import { getAllProductsHttp } from "../api/products/getAllProductsHttp";
 import { getProductHttp } from "../api/products/getProductHttp";
 import { postProductHttp } from "../api/products/postProductHttp";
 import { useAuth } from "../context/AuthContext";
-import { Product } from "../models/Product";
+import { ProductData } from "../models/Product";
 
 export const useProduct = () => {
   const { account } = useAuth();
@@ -13,7 +14,13 @@ export const useProduct = () => {
         barcode: barcode,
       }),
 
-    postProduct: (product: Product) =>
+    getAllProducts: (name: string) =>
+      getAllProductsHttp({
+        accessToken: account.accessToken,
+        name: name,
+      }),
+
+    postProduct: (product: ProductData) =>
       postProductHttp({
         accessToken: account.accessToken,
         ...product,

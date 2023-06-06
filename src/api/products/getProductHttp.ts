@@ -11,10 +11,8 @@ export const getProductHttp = async ({
 }: ProductHttp) => {
   const token = "Bearer " + accessToken;
 
-  const res = await httpClient().get("/products", {
+  return await httpClient().get("/products", {
     params: { barcode: barcode },
     headers: { authorization: token },
   });
-  return res;
-
 };
