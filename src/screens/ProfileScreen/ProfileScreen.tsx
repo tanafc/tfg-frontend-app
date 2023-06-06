@@ -24,9 +24,18 @@ const ProfileScreen = ({ navigation }: ProfileScreenNavigationProps) => {
           <Text style={styles.titleText}>Profile Page</Text>
         </View>
         <View style={styles.infoView}>
-          <Text style={styles.bodyText}>Username: {account.username}</Text>
-          <Text style={styles.bodyText}>Email: {account.email}</Text>
-          <Text style={styles.bodyText}>Role: {account.role}</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.labelText}>User:</Text>
+            <Text style={styles.bodyText}>{account.username}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.labelText}>Email:</Text>
+            <Text style={styles.bodyText}>{account.email}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.labelText}>Role:</Text>
+            <Text style={styles.bodyText}>{account.role}</Text>
+          </View>
         </View>
 
         <View style={styles.buttonView}>
@@ -56,7 +65,20 @@ const styles = StyleSheet.create({
   },
 
   infoView: {
-    padding: 20
+    padding: 20,
+  },
+
+  infoRow: {
+    width: "75%",
+    marginTop: 10,
+    flexDirection: "row",
+    gap: 10
+  },
+
+  labelText: {
+    width: "30%",
+    fontWeight: "bold",
+    fontSize: 20,
   },
 
   bodyText: {
@@ -65,6 +87,7 @@ const styles = StyleSheet.create({
 
   buttonView: {
     width: "60%",
+    marginTop: 20
   },
 });
 
