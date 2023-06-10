@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 import CustomButton from "../../../components/CustomButton";
-import { CustomButtonTypes } from "../../../components/CustomButton/CustomButton";
 import CustomInput from "../../../components/CustomInput";
 import { useProduct } from "../../../hooks/useProduct";
 import { NewProductScreenNavigationProps } from "../../../models/Navigation";
@@ -56,6 +55,7 @@ const NewProductScreen = ({
   const [showOptionalNutrients, setShowOptionalNutrients] =
     useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { postProduct } = useProduct();
 
@@ -83,6 +83,8 @@ const NewProductScreen = ({
   };
 
   const handleUploadProduct = async () => {
+    setLoading(true);
+
     const withoutEmptyIngredients = ingredients.filter(
       (ingredient) => !!ingredient
     );
@@ -105,6 +107,7 @@ const NewProductScreen = ({
         console.log(reason.message);
       });
 
+    setLoading(false);
     setModalVisible(true);
   };
 
@@ -256,6 +259,7 @@ const NewProductScreen = ({
             <CustomButton
               text="Share the new product! 🥳"
               onPress={handleUploadProduct}
+              loading={loading}
             />
           </View>
         </View>
@@ -286,7 +290,7 @@ const NewProductScreen = ({
                     }
                   />
                   <CustomButton
-                    type={CustomButtonTypes.TERTIARY}
+                    type="secondary"
                     text={"Nah im good"}
                     onPress={() =>
                       navigation.navigate("Home", { screen: "HomeScreen" })
