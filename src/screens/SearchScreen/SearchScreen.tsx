@@ -18,25 +18,13 @@ const SearchScreen = ({ navigation }: SearchScreenNavigationProps) => {
   const [searchName, setSearchName] = useState<string>("");
   const [productList, setProductList] = useState<ProductName[]>([]);
 
-  const { getAllProducts, getProduct } = useProduct();
-  const { products, setProducts } = useProductContext();
+  const { getAllProducts } = useProduct();
 
-  const handleOnPress = async (barcode: string) => {
-    try {
-      if (!products.some((product) => product.barcode === barcode)) {
-        const response = await getProduct(barcode);
-
-        setProducts([...products, response.data]);
-      }
-
-      navigation.navigate("Product", {
-        screen: "ProductScreen",
-        params: { barcode: barcode },
-      });
-    } catch (error) {
-      Alert.alert("Unexpected error");
-      console.log(error);
-    }
+  const handleOnPress = (barcode: string) => {
+    navigation.navigate("Product", {
+      screen: "ProductScreen",
+      params: { barcode: barcode },
+    });
   };
 
   useEffect(() => {
@@ -53,7 +41,7 @@ const SearchScreen = ({ navigation }: SearchScreenNavigationProps) => {
           console.log(error);
         }
       }
-    }, 500);
+    }, 250);
 
     return () => clearTimeout(debounce);
   }, [searchName]);
