@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
-import CustomButton, {
-  CustomButtonTypes,
-} from "../../components/CustomButton/CustomButton";
+import CustomButton from "../../components/CustomButton/CustomButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import { useSignup } from "../../hooks/useSignup";
 import { SignupScreenNavigationProps } from "../../models/Navigation";
@@ -12,16 +10,21 @@ const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordRepeat, setPasswordRepeat] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const signup = useSignup();
 
   const handleSignup = () => {
+    setLoading(true);
+
     signup({ username, email, password })
       .then(() => {
+        setLoading(false);
         navigation.navigate("LoginScreen");
       })
       .catch(() => {
-        Alert.alert("Input not valid")
+        setLoading(false);
+        Alert.alert("Input not valid");
       });
   };
 
@@ -66,12 +69,16 @@ const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
             secureTextEntry
           />
 
-          <CustomButton text="Signup" onPress={handleSignup} />
+          <CustomButton
+            text="Signup"
+            onPress={handleSignup}
+            loading={loading}
+          />
 
           <CustomButton
             text="Go to Login"
             onPress={() => navigation.navigate("LoginScreen")}
-            type={CustomButtonTypes.TERTIARY}
+            type="secondary"
           />
         </View>
       </View>

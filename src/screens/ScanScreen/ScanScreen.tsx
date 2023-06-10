@@ -2,19 +2,16 @@ import { BarCodeScanner, BarCodeScannerResult } from "expo-barcode-scanner";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  Modal,
   StyleSheet,
   Text,
-  View,
-  Modal,
+  View
 } from "react-native";
-import { ProductData } from "../../models/Product";
-import CustomButton, {
-  CustomButtonTypes,
-} from "../../components/CustomButton/CustomButton";
-import { ScanScreenNavigationProps } from "../../models/Navigation";
-import { useProduct } from "../../hooks/useProduct";
+import CustomButton from "../../components/CustomButton/CustomButton";
 import { useProductContext } from "../../context/ProductContext";
+import { useProduct } from "../../hooks/useProduct";
+import { ScanScreenNavigationProps } from "../../models/Navigation";
+import { ProductData } from "../../models/Product";
 
 const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
   const [scannedProduct, setScannedProduct] = useState<ProductData | undefined>(
@@ -63,7 +60,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
       .then((response) => {
         setScannedProduct(response.data);
 
-        if (!products.some(el => el.barcode === data)) {
+        if (!products.some((el) => el.barcode === data)) {
           setProducts([...products, response.data]);
         }
         setBarcode(data);
@@ -71,7 +68,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
       .catch((reason) => {
         setBarcode(data);
       });
-      
+
     setLoading(false);
     setModalVisible(true);
   };
@@ -126,23 +123,22 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                   {scannedProduct.name}, {scannedProduct.brand}
                 </Text>
                 <View style={styles.modalButtons}>
-                <CustomButton
-                  text={"Look product info 👀"}
-                  onPress={() => {
-                    
-                    setModalVisible(false);
+                  <CustomButton
+                    text={"Look product info 👀"}
+                    onPress={() => {
+                      setModalVisible(false);
 
-                    navigation.navigate("Product", {
-                      screen: "ProductScreen",
-                      params: { barcode: barcode },
-                    });
-                  }}
-                />
-                <CustomButton
-                  text={"Nah, im good"}
-                  type={CustomButtonTypes.TERTIARY}
-                  onPress={() => setModalVisible(false)}
-                />
+                      navigation.navigate("Product", {
+                        screen: "ProductScreen",
+                        params: { barcode: barcode },
+                      });
+                    }}
+                  />
+                  <CustomButton
+                    text={"Nah, im good"}
+                    type="secondary"
+                    onPress={() => setModalVisible(false)}
+                  />
                 </View>
               </View>
             ) : (
@@ -163,7 +159,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                   />
                   <CustomButton
                     text={"Nah, im good"}
-                    type={CustomButtonTypes.TERTIARY}
+                    type="secondary"
                     onPress={() => setModalVisible(false)}
                   />
                 </View>

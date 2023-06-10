@@ -1,43 +1,46 @@
 import React, { FC } from "react";
 import {
+  ActivityIndicator,
   NativeSyntheticEvent,
   NativeTouchEvent,
   Pressable,
   StyleSheet,
-  Text,
+  Text
 } from "react-native";
 
-export enum CustomButtonTypes {
-  PRIMARY = "primary",
-  SECONDARY = "secondary",
-  TERTIARY = "tertiary",
-}
+export type CustomButtonTypes = "primary" | "secondary"
 
 type CustomButtonProps = {
   text: string;
   onPress: (event: NativeSyntheticEvent<NativeTouchEvent>) => void;
   type?: CustomButtonTypes;
   disabled?: boolean;
+  loading?: boolean;
 };
 
 const CustomButton: FC<CustomButtonProps> = ({
   text,
-  type = CustomButtonTypes.PRIMARY,
+  type = "primary",
   onPress,
   disabled = false,
+  loading = false,
 }) => {
-  if (type === CustomButtonTypes.TERTIARY) {
+  if (type === "secondary") {
     return (
       <Pressable
         onPress={onPress}
+        disabled={disabled}
         style={[
           styles.container,
           styles.container_tertiary,
-          disabled ? styles.container_disabled : {},
+          disabled || loading ? styles.container_disabled : {},
         ]}
-        disabled={disabled}
       >
-        <Text style={[styles.text, styles.text_tertiary]}>{text}</Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#f58b54" />
+        ) : (
+          <Text style={[styles.text, styles.text_tertiary]}>{text}</Text>
+        )}
       </Pressable>
     );
   }
@@ -45,14 +48,18 @@ const CustomButton: FC<CustomButtonProps> = ({
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       style={[
         styles.container,
         styles.container_primary,
-        disabled ? styles.container_disabled : {},
+        disabled || loading ? styles.container_disabled : {},
       ]}
-      disabled={disabled}
     >
-      <Text style={styles.text}>{text}</Text>
+      {loading ? (
+        <ActivityIndicator color="white" />
+      ) : (
+        <Text style={styles.text}>{text}</Text>
+      )}
     </Pressable>
   );
 };

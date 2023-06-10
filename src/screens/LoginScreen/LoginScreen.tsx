@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
-import CustomButton, {
-  CustomButtonTypes,
-} from "../../components/CustomButton/CustomButton";
+import CustomButton from "../../components/CustomButton/CustomButton";
 import CustomInput from "../../components/CustomInput/CustomInput";
 import { useAuth } from "../../context/AuthContext";
 import { useLogin } from "../../hooks/useLogin";
@@ -11,6 +9,7 @@ import { LoginScreenNavigationProps } from "../../models/Navigation";
 const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const { account, saveAccount } = useAuth();
   const login = useLogin();
@@ -22,6 +21,8 @@ const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
   }, []);
 
   const handleLogin = () => {
+    setLoading(true);
+
     login({ username, password })
       .then(async (res) => {
         await saveAccount({
@@ -30,12 +31,16 @@ const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
           role: res.data.role,
           accessToken: res.data.accessToken,
         });
+        setLoading(false);
         navigation.navigate("Home", { screen: "HomeScreen" });
       })
       .catch(() => {
+        setLoading(false);
         Alert.alert("User not found");
       });
   };
+
+  console.log({ loading });
 
   return (
     <ScrollView
@@ -61,12 +66,12 @@ const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
             secureTextEntry={true}
           />
 
-          <CustomButton text="Login" onPress={handleLogin} />
+          <CustomButton text="Login" onPress={handleLogin} loading={loading} />
 
           <CustomButton
             text="Or click here to Signup"
             onPress={() => navigation.navigate("SignupScreen")}
-            type={CustomButtonTypes.TERTIARY}
+            type="secondary"
           />
         </View>
       </View>
