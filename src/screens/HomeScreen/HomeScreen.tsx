@@ -22,7 +22,7 @@ const HomeScreen = ({ navigation }: HomeScreenNavigationProps) => {
 
         {products.length > 0 && (
           <View style={styles.productContainer}>
-            <Text style={styles.subtitleText}>Last products seen 👀</Text>
+            <Text style={styles.subtitleText}>Last products scanned 👀</Text>
             <View style={styles.productList}>
               {[...products].reverse().map((product) => (
                 <Pressable
