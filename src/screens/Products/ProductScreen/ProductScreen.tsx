@@ -1,7 +1,17 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CustomButton from "../../../components/CustomButton";
-import { useProductContext } from "../../../context/ProductContext";
+import { useProduct } from "../../../hooks/useProduct";
+import { useReceipt } from "../../../hooks/useReceipt";
 import { ProductScreenNavigationProps } from "../../../models/Navigation";
 import {
   MandatoryNutrients,
@@ -9,39 +19,51 @@ import {
   OptionalNutrients,
   ProductData,
 } from "../../../models/Product";
-import { useEffect, useState } from "react";
-import { useReceipt } from "../../../hooks/useReceipt";
 import { ReceiptData } from "../../../models/Receipt";
+import { formatDate } from "../../../utils/formatDate";
 
 const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
+  const [product, setProduct] = useState<ProductData | undefined>(undefined);
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
   const [receiptsLoaded, setReceiptsLoaded] = useState(false);
 
   const { barcode } = route.params;
 
-  const { products, setProducts } = useProductContext();
+  const { getProduct } = useProduct();
+  const { getNewestProductReceipts } = useReceipt();
 
-  const product = products.find(
-    (element) => element.barcode === barcode
-  ) as ProductData;
-
-  const { getProductReceipts } = useReceipt();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    const fetchReceipts = async () => {
-      const response = await getProductReceipts(barcode);
+    const fetchProduct = async () => {
+      const response = await getProduct(barcode);
 
-      setReceipts([...response.data.receipts]);
-      setReceiptsLoaded(true);
+      setProduct(response.data);
     };
 
-    fetchReceipts().catch((err) => {
+    fetchProduct().catch((err) => {
       Alert.alert("Unexpected error");
       console.log(err);
     });
   }, []);
 
-  console.log({ receipts });
+  useEffect(() => {
+    if (isFocused) {
+      setReceiptsLoaded(false);
+
+      const fetchReceipts = async () => {
+        const response = await getNewestProductReceipts(barcode);
+
+        setReceipts([...response.data.receipts]);
+        setReceiptsLoaded(true);
+      };
+
+      fetchReceipts().catch((err) => {
+        Alert.alert("Unexpected error");
+        console.log(err);
+      });
+    }
+  }, [isFocused]);
 
   return (
     <ScrollView
@@ -49,121 +71,139 @@ const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
       contentContainerStyle={{ flexGrow: 1 }}
     >
       <View style={styles.container}>
-        <View style={styles.titleView}>
-          <Text style={styles.titleText}>{product.name}</Text>
-        </View>
-
-        <View style={styles.infoView}>
-          <View style={styles.infoRow}>
-            <Text style={styles.labelText}>Brand:</Text>
-            <Text style={styles.bodyText}>{product.brand}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.labelText}>Barcode:</Text>
-            <Text style={styles.bodyText}>{barcode}</Text>
-          </View>
-
-          <Text style={styles.labelText}>Ingredients:</Text>
-          {product.ingredients.map((ingredient) => (
-            <View key={ingredient} style={styles.infoRow}>
-              <Ionicons name="chevron-forward-outline" size={25} />
-              <Text style={styles.bodyText}>{ingredient}</Text>
+        {product != undefined ? (
+          <>
+            <View style={styles.titleView}>
+              <Text style={styles.titleText}>{product.name}</Text>
             </View>
-          ))}
 
-          <Text style={styles.labelText}>Nutrients:</Text>
-          {Object.keys(MandatoryNutrients).map((nutrient) => {
-            if (product.nutrients[nutrient as keyof NutrientsData] != null) {
-              return (
-                <View key={nutrient} style={styles.infoRow}>
-                  <Ionicons name="chevron-forward-outline" size={25} />
-                  <Text style={styles.labelText}>
-                    {
-                      MandatoryNutrients[
-                        nutrient as keyof typeof MandatoryNutrients
-                      ]
-                    }
-                    :
-                  </Text>
-                  <Text style={styles.bodyText}>
-                    {product.nutrients[nutrient as keyof NutrientsData]}
-                  </Text>
-                </View>
-              );
-            }
-          })}
-
-          {Object.keys(OptionalNutrients).map((nutrient) => {
-            if (product.nutrients[nutrient as keyof NutrientsData] != null) {
-              return (
-                <View key={nutrient} style={styles.infoRow}>
-                  <Ionicons name="chevron-forward-outline" size={25} />
-                  <Text style={styles.labelText}>
-                    {
-                      OptionalNutrients[
-                        nutrient as keyof typeof OptionalNutrients
-                      ]
-                    }
-                    :
-                  </Text>
-                  <Text style={styles.bodyText}>
-                    {product.nutrients[nutrient as keyof NutrientsData]}
-                  </Text>
-                </View>
-              );
-            }
-          })}
-
-          <View style={styles.infoRow}>
-            <Text style={styles.labelText}>Beverage:</Text>
-            <Text style={styles.bodyText}>
-              {product.beverage ? "Yes" : "No"}
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.labelText}>NutriScore:</Text>
-            <Text style={styles.bodyText}>
-              {product.nutriScore === ""
-                ? "Not defined 😓"
-                : product.nutriScore}
-            </Text>
-          </View>
-
-          <Text style={styles.labelText}>Prices:</Text>
-          {receiptsLoaded &&
-            (receipts.length === 0 ? (
-              <View style={{alignItems:"center"}}>
-                <Text >No data found 😥</Text>
+            <View style={styles.infoView}>
+              <View style={styles.infoRow}>
+                <Text style={styles.labelText}>Brand:</Text>
+                <Text style={styles.bodyText}>{product.brand}</Text>
               </View>
-            ) : (
-              <View style={styles.infoView}>
-                <Text style={styles.bodyText}>
-                  {receipts.map((receipt) => (
-                    <View key={receipt._id}>
-                      <Text>Shop: {receipt.shop.name}</Text>
-                      <Text>Price: {receipt.price}€</Text>
-                      <Text>Date: {receipt.date}</Text>
-                      <Text></Text>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.labelText}>Barcode:</Text>
+                <Text style={styles.bodyText}>{barcode}</Text>
+              </View>
+
+              <Text style={styles.labelText}>Ingredients:</Text>
+              {product.ingredients.map((ingredient) => (
+                <View key={ingredient} style={styles.infoRow}>
+                  <Ionicons name="chevron-forward-outline" size={25} />
+                  <Text style={styles.bodyText}>{ingredient}</Text>
+                </View>
+              ))}
+
+              <Text style={styles.labelText}>Nutrients:</Text>
+              {Object.keys(MandatoryNutrients).map((nutrient) => {
+                if (
+                  product.nutrients[nutrient as keyof NutrientsData] != null
+                ) {
+                  return (
+                    <View key={nutrient} style={styles.infoRow}>
+                      <Ionicons name="chevron-forward-outline" size={25} />
+                      <Text style={[styles.labelText, { width: 130 }]}>
+                        {
+                          MandatoryNutrients[
+                            nutrient as keyof typeof MandatoryNutrients
+                          ]
+                        }
+                        :
+                      </Text>
+                      <Text style={styles.bodyText}>
+                        {product.nutrients[nutrient as keyof NutrientsData]}
+                      </Text>
                     </View>
-                  ))}
+                  );
+                }
+              })}
+
+              {Object.keys(OptionalNutrients).map((nutrient) => {
+                if (
+                  product.nutrients[nutrient as keyof NutrientsData] != null
+                ) {
+                  return (
+                    <View key={nutrient} style={styles.infoRow}>
+                      <Ionicons name="chevron-forward-outline" size={25} />
+                      <Text style={[styles.labelText, { width: 130 }]}>
+                        {
+                          OptionalNutrients[
+                            nutrient as keyof typeof OptionalNutrients
+                          ]
+                        }
+                        :
+                      </Text>
+                      <Text style={styles.bodyText}>
+                        {product.nutrients[nutrient as keyof NutrientsData]}
+                      </Text>
+                    </View>
+                  );
+                }
+              })}
+              <View style={styles.infoRow}>
+                <Text style={styles.labelText}>Beverage:</Text>
+                <Text style={styles.bodyText}>
+                  {product.beverage ? "Yes" : "No"}
                 </Text>
               </View>
-            ))}
-        </View>
-        <View style={styles.buttonView}>
-          <CustomButton
-            text="Add new price"
-            onPress={() =>
-              navigation.navigate("NewPriceScreen", {
-                barcode: barcode,
-                name: product.name,
-                brand: product.brand,
-              })
-            }
-          />
-        </View>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.labelText}>NutriScore:</Text>
+                <Text style={styles.bodyText}>
+                  {product.nutriScore === ""
+                    ? "Not defined 😓"
+                    : product.nutriScore}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.titleView}>
+              <Text style={styles.titleText}>Prices:</Text>
+            </View>
+            {receiptsLoaded ? (
+              <>
+                {receipts.length === 0 ? (
+                  <View style={{ alignItems: "center" }}>
+                    <Text>No data found 😥</Text>
+                  </View>
+                ) : (
+                  <View style={styles.infoView}>
+                    {receipts.map((receipt) => (
+                      <View key={receipt._id} style={styles.infoRow}>
+                        <Text style={[styles.labelText, { width: 90 }]}>
+                          {receipt.shop.name}:
+                        </Text>
+                        <Text style={[styles.bodyText, { width: 50 }]}>
+                          {receipt.price}€
+                        </Text>
+                        <Text style={styles.bodyText}>
+                          {formatDate(new Date(receipt.date))}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                <View style={styles.buttonView}>
+                  <CustomButton
+                    text="Update price"
+                    onPress={() =>
+                      navigation.navigate("NewPriceScreen", {
+                        barcode: barcode,
+                        name: product.name,
+                        brand: product.brand,
+                      })
+                    }
+                  />
+                </View>
+              </>
+            ) : (
+              <ActivityIndicator size="large" color="#f58b54" />
+            )}
+          </>
+        ) : (
+          <ActivityIndicator size="large" color="#f58b54" />
+        )}
       </View>
     </ScrollView>
   );
@@ -179,7 +219,7 @@ const styles = StyleSheet.create({
 
   titleView: {
     marginBottom: 5,
-    marginTop: 50,
+    marginTop: 20,
   },
 
   titleText: {
@@ -202,14 +242,15 @@ const styles = StyleSheet.create({
   labelText: {
     fontWeight: "bold",
     fontSize: 18,
+    width: 100,
   },
 
   bodyText: {
-    fontSize: 15,
+    fontSize: 18,
   },
 
   buttonView: {
-    width: "60%",
+    marginTop: 12,
     marginBottom: 50,
   },
 });

@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import CustomInput from "../../../components/CustomInput/CustomInput";
 import { useShop } from "../../../hooks/useShop";
@@ -17,6 +24,8 @@ const NewPriceScreen = ({
   const [shops, setShops] = useState<ShopLocationsData[]>([
     { name: "Select a supermarket", locations: [] },
   ]);
+  const [loadingShops, setLoadingShops] = useState(true);
+  const [loadingUpload, setLoadingUpload] = useState(false);
 
   const { barcode, name, brand } = route.params;
 
@@ -27,25 +36,31 @@ const NewPriceScreen = ({
       const response = await getAllShops();
 
       setShops([...shops, ...response.data.shops]);
+      setLoadingShops(false);
     };
 
     fetchShops().catch((err) => {
+      setLoadingShops(false);
       Alert.alert("Unexpected error");
       console.log(err);
     });
   }, []);
 
   const handlePush = async () => {
+    setLoadingUpload(true);
+
     await postShopPrice({
       barcode: barcode,
       name: shopSelected,
       price: parseFloat(newPrice),
     })
       .then(() => {
+        setLoadingUpload(false);
         Alert.alert("Price successfully updated 🥳!");
         navigation.goBack();
       })
       .catch((err) => {
+        setLoadingUpload(false);
         Alert.alert("Error...");
         console.log(err);
       });
@@ -63,39 +78,52 @@ const NewPriceScreen = ({
     >
       <View style={styles.container}>
         <Text style={styles.titleText}>New price</Text>
-        <Text>
+        <Text style={styles.labelText}>
           {name}, {brand}
         </Text>
-        <View style={styles.inputContainer}>
-          <View style={styles.inputView}>
-            <Text>💸 Price (Euros):</Text>
-            <CustomInput
-              value={newPrice}
-              onChangeText={setNewPrice}
-              placeholder="0.0"
-            />
+        {loadingShops ? (
+          <View style={{ marginTop: 30 }}>
+            <ActivityIndicator size="large" color="#f58b54" />
           </View>
-          <View style={styles.inputView}>
-            <Text>🛒 Supermarket:</Text>
-            <Picker
-              selectedValue={shopSelected}
-              onValueChange={(itemValue) => setShopSelected(itemValue)}
-            >
-              {shops.map((shop) => (
-                <Picker.Item
-                  key={shop.name}
-                  label={shop.name}
-                  value={shop.name}
-                />
-              ))}
-            </Picker>
-          </View>
-          <CustomButton
-            text="Publish"
-            onPress={handlePush}
-            disabled={!isValid}
-          ></CustomButton>
-        </View>
+        ) : (
+          <>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputView}>
+                <View style={styles.inputRow}>
+                  <Text style={styles.bodyText}>💶 Price :</Text>
+                  <CustomInput
+                    value={newPrice}
+                    onChangeText={setNewPrice}
+                    placeholder="0.00"
+                  />
+                </View>
+              </View>
+              <View style={styles.inputView}>
+                <Text style={styles.bodyText}>🛒 Supermarket:</Text>
+                <Picker
+                  selectedValue={shopSelected}
+                  onValueChange={(itemValue) => setShopSelected(itemValue)}
+                >
+                  {shops.map((shop) => (
+                    <Picker.Item
+                      key={shop.name}
+                      label={shop.name}
+                      value={shop.name}
+                    />
+                  ))}
+                </Picker>
+              </View>
+              <View style={styles.buttonView}>
+                <CustomButton
+                  text="Update"
+                  onPress={handlePush}
+                  disabled={!isValid}
+                  loading={loadingUpload}
+                ></CustomButton>
+              </View>
+            </View>
+          </>
+        )}
       </View>
     </ScrollView>
   );
@@ -117,6 +145,15 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
 
+  labelText: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+
+  bodyText: {
+    fontSize: 18,
+  },
+
   inputContainer: {
     marginTop: 15,
     width: "70%",
@@ -124,5 +161,16 @@ const styles = StyleSheet.create({
 
   inputView: {
     marginTop: 10,
+  },
+
+  inputRow: {
+    gap: 8,
+    maxWidth: 188,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  buttonView: {
+    marginTop: 12,
   },
 });
