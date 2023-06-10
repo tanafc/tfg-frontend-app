@@ -1,4 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import {
@@ -11,54 +10,33 @@ import {
 } from "react-native";
 import CustomButton from "../../../components/CustomButton";
 import { useProduct } from "../../../hooks/useProduct";
-import { useReceipt } from "../../../hooks/useReceipt";
 import { ProductScreenNavigationProps } from "../../../models/Navigation";
-import {
-  MandatoryNutrients,
-  NutrientsData,
-  OptionalNutrients,
-  ProductData,
-} from "../../../models/Product";
-import { ReceiptData } from "../../../models/Receipt";
-import { formatDate } from "../../../utils/formatDate";
+import { ProductData } from "../../../models/Product";
+import Nutrients from "./components/Nutrients";
+import Prices from "./components/Prices/Prices";
 
 const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
-  const [product, setProduct] = useState<ProductData | undefined>(undefined);
-  const [receipts, setReceipts] = useState<ReceiptData[]>([]);
-  const [receiptsLoaded, setReceiptsLoaded] = useState(false);
-
   const { barcode } = route.params;
 
-  const { getProduct } = useProduct();
-  const { getNewestProductReceipts } = useReceipt();
+  const [product, setProduct] = useState<ProductData | undefined>(undefined);
+
+  const [tab, setTab] = useState<"nutrients" | "prices" | "locations">(
+    "nutrients"
+  );
 
   const isFocused = useIsFocused();
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      const response = await getProduct(barcode);
-
-      setProduct(response.data);
-    };
-
-    fetchProduct().catch((err) => {
-      Alert.alert("Unexpected error");
-      console.log(err);
-    });
-  }, []);
+  const { getProduct } = useProduct();
 
   useEffect(() => {
     if (isFocused) {
-      setReceiptsLoaded(false);
+      const fetchProduct = async () => {
+        const response = await getProduct(barcode);
 
-      const fetchReceipts = async () => {
-        const response = await getNewestProductReceipts(barcode);
-
-        setReceipts([...response.data.receipts]);
-        setReceiptsLoaded(true);
+        setProduct(response.data);
       };
 
-      fetchReceipts().catch((err) => {
+      fetchProduct().catch((err) => {
         Alert.alert("Unexpected error");
         console.log(err);
       });
@@ -69,142 +47,63 @@ const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ flexGrow: 1 }}
+      style={{ backgroundColor: "#DFDDC7" }}
     >
-      <View style={styles.container}>
-        {product != undefined ? (
-          <>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: 10,
+          marginTop: 10,
+        }}
+      >
+        <View style={{ width: "30%" }}>
+          <CustomButton
+            disabled={tab === "nutrients"}
+            text="Nutrients"
+            onPress={() => {
+              setTab("nutrients");
+            }}
+          />
+        </View>
+        <View style={{ width: "30%" }}>
+          <CustomButton
+            text="Prices"
+            disabled={tab === "prices"}
+            onPress={() => {
+              setTab("prices");
+            }}
+          />
+        </View>
+        <View style={{ width: "30%" }}>
+          <CustomButton
+            text="Locations"
+            disabled={tab === "locations"}
+            onPress={() => {
+              setTab("locations");
+            }}
+          />
+        </View>
+      </View>
+
+      {!product ? (
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#f58b54" />
+        </View>
+      ) : (
+        <View style={{ marginBottom: 30 }}>
+          <View style={styles.container}>
             <View style={styles.titleView}>
               <Text style={styles.titleText}>{product.name}</Text>
             </View>
+            {tab === "nutrients" && <Nutrients product={product} />}
 
-            <View style={styles.infoView}>
-              <View style={styles.infoRow}>
-                <Text style={styles.labelText}>Brand:</Text>
-                <Text style={styles.bodyText}>{product.brand}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.labelText}>Barcode:</Text>
-                <Text style={styles.bodyText}>{barcode}</Text>
-              </View>
-
-              <Text style={styles.labelText}>Ingredients:</Text>
-              {product.ingredients.map((ingredient) => (
-                <View key={ingredient} style={styles.infoRow}>
-                  <Ionicons name="chevron-forward-outline" size={25} />
-                  <Text style={styles.bodyText}>{ingredient}</Text>
-                </View>
-              ))}
-
-              <Text style={styles.labelText}>Nutrients:</Text>
-              {Object.keys(MandatoryNutrients).map((nutrient) => {
-                if (
-                  product.nutrients[nutrient as keyof NutrientsData] != null
-                ) {
-                  return (
-                    <View key={nutrient} style={styles.infoRow}>
-                      <Ionicons name="chevron-forward-outline" size={25} />
-                      <Text style={[styles.labelText, { width: 130 }]}>
-                        {
-                          MandatoryNutrients[
-                            nutrient as keyof typeof MandatoryNutrients
-                          ]
-                        }
-                        :
-                      </Text>
-                      <Text style={styles.bodyText}>
-                        {product.nutrients[nutrient as keyof NutrientsData]}
-                      </Text>
-                    </View>
-                  );
-                }
-              })}
-
-              {Object.keys(OptionalNutrients).map((nutrient) => {
-                if (
-                  product.nutrients[nutrient as keyof NutrientsData] != null
-                ) {
-                  return (
-                    <View key={nutrient} style={styles.infoRow}>
-                      <Ionicons name="chevron-forward-outline" size={25} />
-                      <Text style={[styles.labelText, { width: 130 }]}>
-                        {
-                          OptionalNutrients[
-                            nutrient as keyof typeof OptionalNutrients
-                          ]
-                        }
-                        :
-                      </Text>
-                      <Text style={styles.bodyText}>
-                        {product.nutrients[nutrient as keyof NutrientsData]}
-                      </Text>
-                    </View>
-                  );
-                }
-              })}
-              <View style={styles.infoRow}>
-                <Text style={styles.labelText}>Beverage:</Text>
-                <Text style={styles.bodyText}>
-                  {product.beverage ? "Yes" : "No"}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Text style={styles.labelText}>NutriScore:</Text>
-                <Text style={styles.bodyText}>
-                  {product.nutriScore === ""
-                    ? "Not defined 😓"
-                    : product.nutriScore}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.titleView}>
-              <Text style={styles.titleText}>Prices:</Text>
-            </View>
-            {receiptsLoaded ? (
-              <>
-                {receipts.length === 0 ? (
-                  <View style={{ alignItems: "center" }}>
-                    <Text>No data found 😥</Text>
-                  </View>
-                ) : (
-                  <View style={styles.infoView}>
-                    {receipts.map((receipt) => (
-                      <View key={receipt._id} style={styles.infoRow}>
-                        <Text style={[styles.labelText, { width: 90 }]}>
-                          {receipt.shop.name}:
-                        </Text>
-                        <Text style={[styles.bodyText, { width: 50 }]}>
-                          {receipt.price}€
-                        </Text>
-                        <Text style={styles.bodyText}>
-                          {formatDate(new Date(receipt.date))}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                )}
-                <View style={styles.buttonView}>
-                  <CustomButton
-                    text="Update price"
-                    onPress={() =>
-                      navigation.navigate("NewPriceScreen", {
-                        barcode: barcode,
-                        name: product.name,
-                        brand: product.brand,
-                      })
-                    }
-                  />
-                </View>
-              </>
-            ) : (
-              <ActivityIndicator size="large" color="#f58b54" />
+            {tab === "prices" && (
+              <Prices product={product} navigation={navigation} />
             )}
-          </>
-        ) : (
-          <ActivityIndicator size="large" color="#f58b54" />
-        )}
-      </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -226,32 +125,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontStyle: "italic",
     fontSize: 30,
-  },
-
-  infoView: {
-    padding: 20,
-    gap: 8,
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 20,
-  },
-
-  labelText: {
-    fontWeight: "bold",
-    fontSize: 18,
-    width: 100,
-  },
-
-  bodyText: {
-    fontSize: 18,
-  },
-
-  buttonView: {
-    marginTop: 12,
-    marginBottom: 50,
   },
 });
 
