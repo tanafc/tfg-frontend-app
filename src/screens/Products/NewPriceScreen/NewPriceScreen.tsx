@@ -1,18 +1,17 @@
+import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import CustomInput from "../../../components/CustomInput/CustomInput";
 import { useShop } from "../../../hooks/useShop";
 import { NewPriceScreenNavigationProps } from "../../../models/Navigation";
-import { ShopLocationsData } from "../../../models/Shop";
-import { Picker } from "@react-native-picker/picker";
+import { ShopLocationData } from "../../../models/Shop";
 import { isNumeric } from "../../../utils/isNumeric";
 
 const NewPriceScreen = ({
@@ -20,11 +19,9 @@ const NewPriceScreen = ({
   navigation,
 }: NewPriceScreenNavigationProps) => {
   const [newPrice, setNewPrice] = useState("");
+  const [searchShop, setSearchShop] = useState("");
   const [shopSelected, setShopSelected] = useState<string>("");
-  const [shops, setShops] = useState<ShopLocationsData[]>([
-    { name: "Select a supermarket", locations: [] },
-  ]);
-  const [loadingShops, setLoadingShops] = useState(true);
+  const [shops, setShops] = useState<ShopLocationData[]>([]);
   const [loadingUpload, setLoadingUpload] = useState(false);
 
   const { barcode, name, brand } = route.params;
@@ -32,19 +29,21 @@ const NewPriceScreen = ({
   const { getAllShops, postShopPrice } = useShop();
 
   useEffect(() => {
-    const fetchShops = async () => {
-      const response = await getAllShops();
+    const debounce = setTimeout(async () => {
+      if (searchShop) {
+        try {
+          const response = await getAllShops(searchShop);
 
-      setShops([...shops, ...response.data.shops]);
-      setLoadingShops(false);
-    };
+          setShops([...response.data.shops]);
+        } catch (error) {
+          Alert.alert("Unexpected error");
+          console.log(error);
+        }
+      }
+    }, 250);
 
-    fetchShops().catch((err) => {
-      setLoadingShops(false);
-      Alert.alert("Unexpected error");
-      console.log(err);
-    });
-  }, []);
+    return () => clearTimeout(debounce);
+  }, [searchShop]);
 
   const handlePush = async () => {
     setLoadingUpload(true);
@@ -67,9 +66,7 @@ const NewPriceScreen = ({
   };
 
   const isValid =
-    shopSelected &&
-    shopSelected !== "Select a supermarket" &&
-    isNumeric(newPrice);
+    shopSelected && shopSelected !== "default" && isNumeric(newPrice);
 
   return (
     <ScrollView
@@ -81,49 +78,65 @@ const NewPriceScreen = ({
         <Text style={styles.labelText}>
           {name}, {brand}
         </Text>
-        {loadingShops ? (
-          <View style={{ marginTop: 30 }}>
-            <ActivityIndicator size="large" color="#f58b54" />
-          </View>
-        ) : (
-          <>
-            <View style={styles.inputContainer}>
-              <View style={styles.inputView}>
-                <View style={styles.inputRow}>
-                  <Text style={styles.bodyText}>💶 Price :</Text>
-                  <CustomInput
-                    value={newPrice}
-                    onChangeText={setNewPrice}
-                    placeholder="0.00"
-                  />
-                </View>
-              </View>
-              <View style={styles.inputView}>
-                <Text style={styles.bodyText}>🛒 Supermarket:</Text>
-                <Picker
-                  selectedValue={shopSelected}
-                  onValueChange={(itemValue) => setShopSelected(itemValue)}
-                >
-                  {shops.map((shop) => (
-                    <Picker.Item
-                      key={shop.name}
-                      label={shop.name}
-                      value={shop.name}
-                    />
-                  ))}
-                </Picker>
-              </View>
-              <View style={styles.buttonView}>
-                <CustomButton
-                  text="Update"
-                  onPress={handlePush}
-                  disabled={!isValid}
-                  loading={loadingUpload}
-                ></CustomButton>
-              </View>
+
+        <View style={styles.inputContainer}>
+          <View style={styles.inputView}>
+            <View style={[styles.inputRow, { maxWidth: 76 }]}>
+              <Text style={styles.bodyText}>💶 Price :</Text>
+              <CustomInput
+                value={newPrice}
+                onChangeText={setNewPrice}
+                placeholder="0.00"
+              />
+              <Text style={styles.bodyText}>€</Text>
             </View>
-          </>
-        )}
+
+            <Text style={styles.bodyText}>🛒 Supermarket:</Text>
+            <View style={{ marginTop: 5 }}>
+              <CustomInput
+                value={searchShop}
+                onChangeText={setSearchShop}
+                placeholder="Super Cool Market"
+              />
+            </View>
+          </View>
+
+          {!!searchShop && (
+            <Picker
+              selectedValue={shopSelected}
+              onValueChange={(itemValue) => setShopSelected(itemValue)}
+            >
+              <Picker.Item
+                key={"default"}
+                label={"Select a supermarket"}
+                value={"default"}
+              />
+
+              {shops.map((shop) => (
+                <Picker.Item
+                  key={shop.name}
+                  label={shop.name}
+                  value={shop.name}
+                />
+              ))}
+
+              <Picker.Item
+                key={"notFound"}
+                label={"I can't find it"}
+                value={"notFound"}
+              />
+            </Picker>
+          )}
+
+          <View style={styles.buttonView}>
+            <CustomButton
+              text="Update"
+              onPress={handlePush}
+              disabled={!isValid}
+              loading={loadingUpload}
+            ></CustomButton>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
@@ -165,9 +178,8 @@ const styles = StyleSheet.create({
 
   inputRow: {
     gap: 8,
-    maxWidth: 188,
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   buttonView: {

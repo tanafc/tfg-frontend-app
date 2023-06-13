@@ -6,10 +6,11 @@ export const useReceipt = () => {
   const { account } = useAuth();
 
   return {
-    getProductReceipts: (barcode: string) =>
+    getProductReceipts: (barcode: string, shop: string) =>
       getReceiptsHttp({
         accessToken: account.accessToken,
         product: barcode,
+        shop: shop
       }),
 
     getNewestProductReceipts: (barcode: string) =>

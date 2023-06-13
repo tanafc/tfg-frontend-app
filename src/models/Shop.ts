@@ -3,13 +3,13 @@ import { ProductData } from "./Product";
 export type Location = {
   latitude: string;
   longitude: string;
-  address: string;
+  address?: string;
 };
 
 export type ShopData = {
   name: string;
   products: ProductData[];
-  locations: Location[];
+  location: Location;
 };
 
 export type ShopNewLocationData = {
@@ -17,9 +17,9 @@ export type ShopNewLocationData = {
   location: Location;
 };
 
-export type ShopLocationsData = {
+export type ShopLocationData = {
   name: string;
-  locations: Location[];
+  location: Location;
 };
 
 export type ShopNewPriceData = {
