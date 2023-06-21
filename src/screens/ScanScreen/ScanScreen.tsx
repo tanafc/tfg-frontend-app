@@ -1,17 +1,12 @@
 import { BarCodeScanner, BarCodeScannerResult } from "expo-barcode-scanner";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Modal,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
 import CustomButton from "../../components/CustomButton/CustomButton";
 import { useProductContext } from "../../context/ProductContext";
 import { useProduct } from "../../hooks/useProduct";
 import { ScanScreenNavigationProps } from "../../models/Navigation";
 import { ProductData } from "../../models/Product";
+import { useIsFocused } from "@react-navigation/native";
 
 const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
   const [scannedProduct, setScannedProduct] = useState<ProductData | undefined>(
@@ -21,27 +16,21 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
   const [scanned, setScanned] = useState(false);
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   const { products, setProducts } = useProductContext();
   const { getProduct } = useProduct();
 
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    const unsubscribeFocus = navigation.addListener("focus", () =>
-      setIsFocused(true)
-    );
-
-    const unsubscribeBlur = navigation.addListener("blur", () => {
-      setIsFocused(false);
+    if (!isFocused) {
+      setScannedProduct(undefined);
+      setModalVisible(false);
       setScanned(false);
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigation]);
+      setBarcode("");
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -66,6 +55,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
         setBarcode(data);
       })
       .catch((reason) => {
+        setScannedProduct(undefined);
         setBarcode(data);
       });
 
@@ -92,7 +82,11 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
     return (
       <View style={styles.container}>
         <BarCodeScanner
-          barCodeTypes={[BarCodeScanner.Constants.BarCodeType.upc_a]}
+          barCodeTypes={[
+            BarCodeScanner.Constants.BarCodeType.upc_a,
+            BarCodeScanner.Constants.BarCodeType.upc_e,
+            BarCodeScanner.Constants.BarCodeType.upc_ean,
+          ]}
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
           style={[StyleSheet.absoluteFillObject, styles.container]}
         >
@@ -119,9 +113,11 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                 <Text style={styles.modalText}>
                   Yay! We have this product 🥳
                 </Text>
-                <Text>
-                  {scannedProduct.name}, {scannedProduct.brand}
-                </Text>
+                <View style={{ marginTop: 5 }}>
+                  <Text>
+                    {scannedProduct.name}, {scannedProduct.brand}
+                  </Text>
+                </View>
                 <View style={styles.modalButtons}>
                   <CustomButton
                     text={"Look product info 👀"}
@@ -135,7 +131,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                     }}
                   />
                   <CustomButton
-                    text={"Nah, im good"}
+                    text={"No, thanks"}
                     type="secondary"
                     onPress={() => setModalVisible(false)}
                   />
@@ -144,12 +140,11 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
             ) : (
               <View style={styles.modalView}>
                 <Text style={styles.modalText}>
-                  😱 It seems you found a product we dont have! Would you mind
-                  sharing information about it?
+                  😱 You found a new product!
                 </Text>
                 <View style={styles.modalButtons}>
                   <CustomButton
-                    text={"That would be awesome!"}
+                    text={"Upload information!"}
                     onPress={() =>
                       navigation.navigate("Product", {
                         screen: "NewProductScreen",
@@ -158,7 +153,7 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
                     }
                   />
                   <CustomButton
-                    text={"Nah, im good"}
+                    text={"No, thanks"}
                     type="secondary"
                     onPress={() => setModalVisible(false)}
                   />
@@ -180,7 +175,10 @@ const ScanScreen = ({ navigation }: ScanScreenNavigationProps) => {
           <View style={styles.buttonView}>
             <CustomButton
               text={"Scan another product"}
-              onPress={() => setScanned(false)}
+              onPress={() => {
+                setScannedProduct(undefined);
+                setScanned(false);
+              }}
             />
           </View>
         )}

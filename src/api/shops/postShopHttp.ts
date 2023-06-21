@@ -5,16 +5,10 @@ interface ShopHttp extends ShopNewLocationData {
   accessToken: string;
 }
 
-export const postShopHttp = async ({
-  name,
-  location,
-  accessToken,
-}: ShopHttp) => {
+export const postShopHttp = async ({ accessToken, ...body }: ShopHttp) => {
   const token = "Bearer " + accessToken;
 
-  return await httpClient().post("/shops", {
+  return await httpClient().post("/shops", body, {
     headers: { authorization: token },
-    params: { name: name },
-    data: { location: location },
   });
 };

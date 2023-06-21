@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 export const useAccount = () => {
   const { account } = useAuth();
 
-  return getAccountHttp({
+  return () => getAccountHttp({
     username: account.username,
     accessToken: account.accessToken,
   });

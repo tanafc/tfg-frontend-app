@@ -14,6 +14,7 @@ import { ProductScreenNavigationProps } from "../../../models/Navigation";
 import { ProductData } from "../../../models/Product";
 import Nutrients from "./components/Nutrients";
 import Prices from "./components/Prices/Prices";
+import Locations from "./components/Locations/Locations";
 
 const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
   const { barcode } = route.params;
@@ -101,6 +102,8 @@ const ProductScreen = ({ route, navigation }: ProductScreenNavigationProps) => {
             {tab === "prices" && (
               <Prices product={product} navigation={navigation} />
             )}
+
+            {tab === "locations" && <Locations product={product} />}
           </View>
         </View>
       )}

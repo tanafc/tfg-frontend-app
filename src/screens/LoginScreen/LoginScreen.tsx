@@ -5,20 +5,34 @@ import CustomInput from "../../components/CustomInput/CustomInput";
 import { useAuth } from "../../context/AuthContext";
 import { useLogin } from "../../hooks/useLogin";
 import { LoginScreenNavigationProps } from "../../models/Navigation";
+import { useAccount } from "../../hooks/useAccount";
+import { useLogout } from "../../hooks/useLogout";
+import { useIsFocused } from "@react-navigation/native";
 
 const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
-  const { account, saveAccount } = useAuth();
+  const { saveAccount } = useAuth();
+  const getAccount = useAccount();
   const login = useLogin();
+  const logout = useLogout();
 
-  useEffect(() => {
-    if (account.accessToken) {
-      navigation.navigate("Home", { screen: "HomeScreen" });
-    }
-  }, []);
+  const isFocused = useIsFocused();
+
+  const handleAccount = async () => {
+    setLoading(true);
+
+    getAccount()
+      .then(() => {
+        navigation.navigate("Home", { screen: "HomeScreen" });
+      })
+      .catch(() => {
+        setLoading(false);
+        logout();
+      });
+  };
 
   const handleLogin = () => {
     setLoading(true);
@@ -40,7 +54,14 @@ const LoginScreen = ({ navigation }: LoginScreenNavigationProps) => {
       });
   };
 
-  console.log({ loading });
+  useEffect(() => {
+    handleAccount();
+  }, []);
+
+  useEffect(() => {
+    setUsername("");
+    setPassword("");
+  }, [isFocused]);
 
   return (
     <ScrollView

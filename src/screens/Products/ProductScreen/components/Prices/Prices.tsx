@@ -17,7 +17,6 @@ import { ReceiptData } from "../../../../../models/Receipt";
 import {
   addDaysTo,
   formatDate,
-  formatDateWithHour,
   substractDaysTo,
 } from "../../../../../utils/formatDate";
 
@@ -105,13 +104,15 @@ export const Prices = ({ product, navigation }: PricesProps) => {
               <Text style={styles.bodyText}>No data found 😥</Text>
             </View>
           ) : (
-            <View style={[styles.infoView, { alignItems: "center" }]}>
+            <View style={[styles.infoView, { alignItems: "flex-start" }]}>
               {newestReceipts.map((receipt) => (
                 <View key={receipt._id} style={styles.infoRow}>
-                  <Text style={[styles.labelText, { width: "30%" }]}>
+                  <Text style={[styles.labelText, { width: 120 }]}>
                     {receipt.shop.name}:
                   </Text>
-                  <Text style={styles.bodyText}>{receipt.price}€</Text>
+                  <Text style={[styles.bodyText, { width: 80 }]}>
+                    {receipt.price} €
+                  </Text>
                   <Text style={styles.bodyText}>
                     {formatDate(new Date(receipt.date))}
                   </Text>
@@ -133,15 +134,15 @@ export const Prices = ({ product, navigation }: PricesProps) => {
           </View>
 
           {dataLoaded ? (
-            data.map((shopData) => (
-              <View key={shopData.shop}>
+            data.map((shopData, index) => (
+              <View key={index} style={{ marginTop: 25 }}>
                 <Text style={[styles.labelText, { width: "100%" }]}>
                   {shopData[0].shop}
                 </Text>
                 <VictoryChart
                   width={350}
                   theme={VictoryTheme.material}
-                  scale={{ x: "time" }}
+                  scale={{ x: "time", y: "linear" }}
                   domain={{
                     x: [
                       substractDaysTo(new Date(shopData[0].date), 1),

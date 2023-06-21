@@ -16,6 +16,7 @@ import { NewProductScreenNavigationProps } from "../../../models/Navigation";
 import {
   MandatoryNutrients,
   NutriScore,
+  NutrientUnits,
   NutrientsData,
   OptionalNutrients,
 } from "../../../models/Product";
@@ -190,6 +191,11 @@ const NewProductScreen = ({
                     }
                   />
                 </View>
+                <View style={[styles.nutrientText, { marginLeft: 5 }]}>
+                  <Text>
+                    {NutrientUnits[nutrient as keyof typeof NutrientUnits]}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
@@ -197,8 +203,29 @@ const NewProductScreen = ({
             <Pressable
               onPress={() => setShowOptionalNutrients(!showOptionalNutrients)}
             >
-              <Text style={styles.labelText}>↓ Provide additional info</Text>
-              <Text>Only if you know 🤔</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginBottom: 10,
+                }}
+              >
+                {showOptionalNutrients ? (
+                  <Ionicons
+                    name="chevron-down-circle-outline"
+                    size={25}
+                    color="tomato"
+                  />
+                ) : (
+                  <Ionicons name="chevron-forward-circle-outline" size={25} />
+                )}
+                <View style={{ flexDirection: "column", marginLeft: 10 }}>
+                  <Text style={[styles.labelText, { width: 200 }]}>
+                    Provide additional info
+                  </Text>
+                  <Text style={{ width: 200 }}>Only if you know 🤔</Text>
+                </View>
+              </View>
             </Pressable>
             {showOptionalNutrients &&
               Object.keys(OptionalNutrients).map((nutrient) => (
@@ -223,6 +250,11 @@ const NewProductScreen = ({
                         handleNutrientChange(nutrient, value)
                       }
                     />
+                  </View>
+                  <View style={[styles.nutrientText, { marginLeft: 5 }]}>
+                    <Text>
+                      {NutrientUnits[nutrient as keyof typeof NutrientUnits]}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -251,7 +283,7 @@ const NewProductScreen = ({
               <Picker.Item label="C:   Not really healthy" value={"C"} />
               <Picker.Item label="D:   Not healthy" value={"D"} />
               <Picker.Item label="E:   Definetly not healthy" value={"E"} />
-              <Picker.Item label="It does not say 😥" value={""} />
+              <Picker.Item label="I do not see it 😥" value={""} />
             </Picker>
           </View>
 
@@ -275,26 +307,14 @@ const NewProductScreen = ({
             {uploadSuccessful === true && (
               <View style={styles.modalView}>
                 <Text style={styles.modalText}>
-                  Yay 🥳! The product was successfully uploaded, would you mind
-                  telling us where you found the product?
+                  Yay 🥳! The product was successfully uploaded!
                 </Text>
                 <View style={styles.modalButtons}>
                   <CustomButton
-                    text={"With pleasure"}
-                    onPress={() =>
-                      navigation.navigate("NewPriceScreen", {
-                        barcode: barcode,
-                        name: name,
-                        brand: brand,
-                      })
-                    }
-                  />
-                  <CustomButton
-                    type="secondary"
-                    text={"Nah im good"}
-                    onPress={() =>
-                      navigation.navigate("Home", { screen: "HomeScreen" })
-                    }
+                    text={"That's great!"}
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
                   />
                 </View>
               </View>
@@ -394,7 +414,7 @@ const styles = StyleSheet.create({
   },
 
   nutrientInput: {
-    width: "40%",
+    width: "25%",
   },
 
   beverageContainer: {

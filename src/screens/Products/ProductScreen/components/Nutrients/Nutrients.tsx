@@ -2,6 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { StyleSheet, Text, View } from "react-native";
 import {
   MandatoryNutrients,
+  NutrientUnits,
   NutrientsData,
   OptionalNutrients,
   ProductData,
@@ -14,6 +15,8 @@ type NutrientsProps = {
 export const Nutrients = ({ product }: NutrientsProps) => {
   return (
     <View style={styles.container}>
+      {product.beverage && <Text style={styles.labelText}>Beverage</Text>}
+
       <View style={styles.infoView}>
         <View style={styles.infoRow}>
           <Text style={styles.labelText}>Brand:</Text>
@@ -48,7 +51,8 @@ export const Nutrients = ({ product }: NutrientsProps) => {
                   :
                 </Text>
                 <Text style={styles.bodyText}>
-                  {product.nutrients[nutrient as keyof NutrientsData]}
+                  {product.nutrients[nutrient as keyof NutrientsData]}{" "}
+                  {NutrientUnits[nutrient as keyof typeof NutrientUnits]}
                 </Text>
               </View>
             );
@@ -69,18 +73,15 @@ export const Nutrients = ({ product }: NutrientsProps) => {
                   :
                 </Text>
                 <Text style={styles.bodyText}>
-                  {product.nutrients[nutrient as keyof NutrientsData]}
+                  {product.nutrients[nutrient as keyof NutrientsData]}{" "}
+                  {NutrientUnits[nutrient as keyof typeof NutrientUnits]}
                 </Text>
               </View>
             );
           }
         })}
-        <View style={styles.infoRow}>
-          <Text style={styles.labelText}>Beverage:</Text>
-          <Text style={styles.bodyText}>{product.beverage ? "Yes" : "No"}</Text>
-        </View>
 
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, {marginTop: 5}]}>
           <Text style={styles.labelText}>NutriScore:</Text>
           <Text style={styles.bodyText}>
             {product.nutriScore === "" ? "Not defined 😓" : product.nutriScore}

@@ -15,6 +15,7 @@ export type ShopData = {
 export type ShopNewLocationData = {
   name: string;
   location: Location;
+  address?: string;
 };
 
 export type ShopLocationData = {

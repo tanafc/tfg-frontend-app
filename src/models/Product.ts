@@ -7,9 +7,9 @@ export type NutrientsData = {
   totalCarbohydrates: string;
   totalSugars: string;
   protein: string;
-  salt: string;
   addedSugars?: string;
   transFat?: string;
+  salt?: string;
   sodium?: string;
   fibre?: string;
   cholesterol?: string;
@@ -40,6 +40,26 @@ export enum Nutrients {
   PER_FRUIT_VEG = "% fruits & vegetables",
 }
 
+export enum Nutrients_Unit {
+  ENERGY = "kcal",
+  TOTAL_FATS = "g",
+  SATURATED_FATS = "g",
+  TOTAL_CARBOHYDRATES = "g",
+  TOTAL_SUGARS = "g",
+  PROTEIN = "g",
+  SALT = "g",
+  ADDED_SUGARS = "g",
+  TRANS_FATS = "g",
+  SODIUM = "mg",
+  FIBRE = "g",
+  CHOLESTEROL = "mg",
+  D_VITAMIN = "mcg",
+  CALCIUM = "mg",
+  IRON = "mg",
+  POTASSIUM = "mg",
+  PER_FRUIT_VEG = "%",
+}
+
 export const MandatoryNutrients = {
   energy: Nutrients.ENERGY,
   totalFat: Nutrients.TOTAL_FATS,
@@ -47,12 +67,12 @@ export const MandatoryNutrients = {
   totalCarbohydrates: Nutrients.TOTAL_CARBOHYDRATES,
   totalSugars: Nutrients.TOTAL_SUGARS,
   protein: Nutrients.PROTEIN,
-  salt: Nutrients.SALT,
 }
 
 export const OptionalNutrients = {
   addedSugars: Nutrients.ADDED_SUGARS,
   transFat: Nutrients.TRANS_FATS,
+  salt: Nutrients.SALT,
   sodium: Nutrients.SODIUM,
   fibre: Nutrients.FIBRE,
   cholesterol: Nutrients.CHOLESTEROL,
@@ -61,6 +81,26 @@ export const OptionalNutrients = {
   iron: Nutrients.IRON,
   potassium: Nutrients.POTASSIUM,
   perFruitVeg: Nutrients.PER_FRUIT_VEG,
+}
+
+export const NutrientUnits = {
+  energy: Nutrients_Unit.ENERGY,
+  totalFat: Nutrients_Unit.TOTAL_FATS,
+  saturatedFat: Nutrients_Unit.SATURATED_FATS,
+  totalCarbohydrates: Nutrients_Unit.TOTAL_CARBOHYDRATES,
+  totalSugars: Nutrients_Unit.TOTAL_SUGARS,
+  protein: Nutrients_Unit.PROTEIN,
+  salt: Nutrients_Unit.SALT,
+  addedSugars: Nutrients_Unit.ADDED_SUGARS,
+  transFat: Nutrients_Unit.TRANS_FATS,
+  sodium: Nutrients_Unit.SODIUM,
+  fibre: Nutrients_Unit.FIBRE,
+  cholesterol: Nutrients_Unit.CHOLESTEROL,
+  dVitamin: Nutrients_Unit.D_VITAMIN,
+  calcium: Nutrients_Unit.CALCIUM,
+  iron: Nutrients_Unit.IRON,
+  potassium: Nutrients_Unit.POTASSIUM,
+  perFruitVeg: Nutrients_Unit.PER_FRUIT_VEG,
 }
 
 export type ProductData = {

@@ -20,9 +20,7 @@ const ProfileScreen = ({ navigation }: ProfileScreenNavigationProps) => {
       contentContainerStyle={{ flexGrow: 1 }}
     >
       <View style={styles.container}>
-        <View style={styles.titleView}>
-          <Text style={styles.titleText}>Profile Page</Text>
-        </View>
+        <Text style={styles.titleText}>Profile Page</Text>
         <View style={styles.infoView}>
           <View style={styles.infoRow}>
             <Text style={styles.labelText}>User:</Text>
@@ -54,10 +52,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#DFDDC7",
   },
 
-  titleView: {
-    marginBottom: 5,
-  },
-
   titleText: {
     fontWeight: "bold",
     fontStyle: "italic",
@@ -72,7 +66,7 @@ const styles = StyleSheet.create({
     width: "75%",
     marginTop: 10,
     flexDirection: "row",
-    gap: 10
+    gap: 10,
   },
 
   labelText: {
@@ -87,7 +81,7 @@ const styles = StyleSheet.create({
 
   buttonView: {
     width: "60%",
-    marginTop: 20
+    marginTop: 20,
   },
 });
 
