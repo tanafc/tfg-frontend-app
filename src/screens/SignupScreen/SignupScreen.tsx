@@ -27,9 +27,13 @@ const SignupScreen = ({ navigation }: SignupScreenNavigationProps) => {
         setLoading(false);
         navigation.navigate("LoginScreen");
       })
-      .catch(() => {
+      .catch((err) => {
         setLoading(false);
-        Alert.alert("Input not valid");
+        if (err.response.status === 409) {
+          Alert.alert("The username is already taken");
+        } else {
+          Alert.alert("Input not valid");
+        }
       });
   };
 
