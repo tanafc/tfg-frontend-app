@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
 import {
   VictoryAxis,
-  VictoryBar,
   VictoryChart,
   VictoryLine,
   VictoryScatter,
   VictoryTheme,
-  VictoryZoomContainer,
+  VictoryZoomContainer
 } from "victory-native";
 import CustomButton from "../../../../../components/CustomButton";
 import { useReceipt } from "../../../../../hooks/useReceipt";
@@ -159,12 +158,6 @@ export const Prices = ({ product, navigation }: PricesProps) => {
                 >
                   <VictoryAxis />
                   <VictoryAxis dependentAxis tickFormat={(y) => `${y}€`} />
-                  <VictoryBar
-                    data={shopData}
-                    x="date"
-                    y="price"
-                    barWidth={10}
-                  />
                   <VictoryLine data={shopData} x="date" y="price" />
                   <VictoryScatter
                     size={5}
