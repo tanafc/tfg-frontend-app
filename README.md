@@ -10,7 +10,7 @@ Para la ejecución del proyecto, se utilizan los comandos:
 npm install
 npm start
 ```
-Esto iniciará el Metro Bundler, que nos proporcionará un código QR a escanear para la aplicación de Expo Go (Android) o la aplicación de cámara (iOS). Al escanearse, se iniciará la build correspondiente, siendo posible probar la aplicación en el propio dispositivo móvil.
+Esto iniciará el Metro Bundler, que nos proporcionará un código QR a escanear para la aplicación de [Expo Go](https://expo.dev/client) (Android) o la aplicación de cámara (iOS). Al escanearse, se iniciará la build correspondiente, siendo posible probar la aplicación en el propio dispositivo móvil.
 
 > **_Nota:_**  Se debe editar la URL base del fichero de `src/api/httpClient.ts` con la dirección a la API REST en ejecución, que en un entorno local con una dirección IP privada debería ser de la forma `http://192.168.0.0:8000`.
 
